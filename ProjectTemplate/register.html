@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Register New Employee</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <h1>Register New Employee (Admin)</h1>
+
+    <div id="status" style="margin:10px 0; font-weight:bold;"></div>
+
+    <label>Email</label><br>
+    <input id="email" type="text" placeholder="employee@email.com" />
+    <br><br>
+
+    <label>Password</label><br>
+    <input id="password" type="password" placeholder="Minimum 8 characters" />
+    <br><br>
+
+    <label>Role</label><br>
+    <select id="role">
+        <option value="employee">employee</option>
+        <option value="admin">admin</option>
+    </select>
+    <br><br>
+
+    <button onclick="registerEmployee()">Register Employee</button>
+    <button onclick="goHome()">Back to Home</button>
+
+    <script>
+        // 1) Gate page access: logged in + admin only
+        $(document).ready(function () {
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/Me",
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (msg) {
+                    var me = msg.d;
+
+                    if (!me.loggedIn) {
+                        window.location.href = "index.html";
+                        return;
+                    }
+
+                    if ((me.role || "").toLowerCase() !== "admin") {
+                        window.location.href = "home.html";
+                        return;
+                    }
+                },
+                error: function () {
+                    window.location.href = "index.html";
+                }
+            });
+        });
+
+        function registerEmployee() {
+            $("#status").text("");
+
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/RegisterEmployee",
+                data: JSON.stringify({
+                    email: $("#email").val(),
+                    password: $("#password").val(),
+                    role: $("#role").val()
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (msg) {
+                    var r = msg.d;
+                    $("#status").text(r.message);
+
+                    if (r.success) {
+                        $("#email").val("");
+                        $("#password").val("");
+                        $("#role").val("employee");
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                    $("#status").text("Server error. Check console.");
+                }
+            });
+        }
+
+        function goHome() {
+            window.location.href = "home.html";
+        }
+    </script>
+
+</body>
+</html>

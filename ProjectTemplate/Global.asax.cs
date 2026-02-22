@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web;
-using System.Web.Http;
-using System.Web.Routing;
 
 namespace ProjectTemplate
 {
-    public class WebApiApplication : System.Web.HttpApplication
+    public class WebApiApplication : HttpApplication
     {
         protected void Application_Start()
         {
-            GlobalConfiguration.Configure(WebApiConfig.Register);
+            // Temporarily disabled Web API startup to prevent parser/startup crash.
+            // ASMX services (ProjectServices.asmx) do not require WebApiConfig.
         }
     }
 }

@@ -1,44 +1,86 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8" />
-	<title></title>
-	<!--DO NOT FORGET THIS SCRIPT TAG SO YOU CAN USE JQUERY!!!!!-->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<a href="essay-questions.html">📝 Essay Questions</a>
+    <meta charset="utf-8" />
+    <title>Employee Login</title>
 
-	<!--YOUR OWN JAVASCRIPT CAN GO RIGHT HERE-->
-	<script type="text/javascript">
-		function TestButtonHandler() {
-			var webMethod = "ProjectServices.asmx/TestConnection";
-			var parameters = "{}";
+    <!-- jQuery (REQUIRED) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-			//jQuery ajax method
-			$.ajax({
-				type: "POST",
-				url: webMethod,
-				data: parameters,
-				contentType: "application/json; charset=utf-8",
-				dataType: "json",
-				success: function (msg) {
-					var responseFromServer = msg.d;
-					alert(responseFromServer);
-				},
-				error: function (e) {
-					alert("this code will only execute if javascript is unable to access the webservice");
-				}
-			});
-		}
-	</script>
-	<!--END OF YOUR OWN JAVASCRIPT-->
+    <script type="text/javascript">
 
-	<!--AND YOUR OWN CSS CAN GO HERE AS WELL-->
-	<style>
+        // TEST DATABASE CONNECTION
+        function TestButtonHandler() {
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/TestConnection",
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (msg) {
+                    alert(msg.d);
+                },
+                error: function (xhr) {
+                    console.log(xhr);
+                    alert("Cannot reach webservice (" + xhr.status + "): " + xhr.responseText);
+                }
+            });
+        }
 
-	</style>
-	<!--END OF YOUR OWN CSS-->
-</head >
+        // LOGIN FUNCTION
+        function login() {
+            $("#errorMessage").text("");
+
+            var parameters = JSON.stringify({
+                email: $("#email").val(),
+                password: $("#password").val()
+            });
+
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/Login",
+                data: parameters,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+
+                success: function (msg) {
+                    var result = msg.d;
+
+                    if (result.success) {
+                        window.location.href = "home.html";
+                    } else {
+                        $("#errorMessage").text(result.message);
+                    }
+                },
+
+                error: function (xhr) {
+                    console.log(xhr);
+                    $("#errorMessage").text(
+                        "Server error (" + xhr.status + "): " + xhr.responseText
+                    );
+                }
+            });
+        }
+
+    </script>
+</head>
+
 <body>
-	<button onclick="javascript: TestButtonHandler();">Click here to test connection!</button>
+
+    <button onclick="TestButtonHandler()">Click here to test connection!</button>
+    <hr>
+
+    <h2>Employee Login</h2>
+
+    <input id="email" type="text" placeholder="Email" />
+    <br><br>
+
+    <input id="password" type="password" placeholder="Password" />
+    <br><br>
+
+    <button onclick="login()">Login</button>
+
+    <div id="errorMessage" style="color:red; margin-top:10px;"></div>
+
 </body>
-</html >
+</html>

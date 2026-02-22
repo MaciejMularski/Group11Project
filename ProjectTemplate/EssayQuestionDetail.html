@@ -347,56 +347,46 @@
                 return;
             }
 
+             if (!confirm('Are you sure you want to submit? You can only answer each question once.')) {
+            return;
+            }
+
             // Disable button and show loading state
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
+            textarea.disabled = true;
 
-            fetch('ProjectServices.asmx/SubmitEssayAnswer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: CURRENT_USER_ID,
-                    questionId: questionId,
-                    answerText: answerText
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                const result = data.d;
-
-                if (result.Success) {
-                    // Show success message
-                    document.getElementById('questionContainer').style.display = 'none';
-                    document.getElementById('successContainer').style.display = 'block';
-                    document.getElementById('successContainer').innerHTML = `
-                        <div class="success-message">
-                            <div class="success-icon">🎉</div>
-                            <h2>Answer Submitted Successfully!</h2>
-                            <div class="points">You've earned ${result.PointsAwarded} points!</div>
-                            <p>${result.Message}</p>
-                            <p style="margin-top: 20px;">
-                                <button class="btn btn-primary" onclick="window.location.href='essay-questions.html'">
-                                    Back to Questions
-                                </button>
-                            </p>
-                        </div>
-                    `;
-                    window.scrollTo(0, 0);
-                } else {
-                    showError(result.Message);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Submit Answer';
-                }
-            })
-            .catch(error => {
-                console.error('Error submitting answer:', error);
-                showError('Failed to submit answer. Please try again.');
+ fetch('ProjectServices.asmx/SubmitEssayAnswer', {
+        // ... your fetch code
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.d.Success) {
+            // Show success
+        } else {
+            // ADD THIS for duplicate detection:
+            if (data.d.Message.includes('already submitted')) {
+                alert('You have already submitted an answer to this question!');
+                setTimeout(() => {
+                    window.location.href = 'essay-questions.html';
+                }, 2000);
+            } else {
+                alert('Error: ' + data.d.Message);
+                // Re-enable button
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit Answer';
-            });
+                textarea.disabled = false;
+            }
         }
+    })
+    .catch(error => {
+        // ADD THIS:
+        alert('Failed to submit. Please check your connection.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Answer';
+        textarea.disabled = false;
+    });
+}
 
         // Initialize
         loadQuestion();
