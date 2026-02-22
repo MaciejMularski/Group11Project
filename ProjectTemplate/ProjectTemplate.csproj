@@ -96,6 +96,7 @@
     <Content Include="index.html" />
     <Content Include="Logout.aspx" />
     <Content Include="ProjectServices.asmx" />
+    <Content Include="rewards.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

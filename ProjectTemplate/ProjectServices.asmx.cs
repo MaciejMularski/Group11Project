@@ -1,7 +1,9 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Web.Services;
-using MySql.Data.MySqlClient;
 
 namespace ProjectTemplate
 {
@@ -47,8 +49,276 @@ namespace ProjectTemplate
             }
         }
 
-        
-        // Login Feature
+        // adding classes for rewards page feature
+        public class Reward
+        {
+            public int rewardId { get; set; }
+            public string name { get; set; }
+            public string description { get; set; }
+            public int pointsCost { get; set; }
+            public int quantityAvailable { get; set; }
+            public bool isActive { get; set; }
+            public string imageUrl { get; set; }
+        }
+
+        public class Redemption
+        {
+            public int redemptionId { get; set; }
+            public int rewardId { get; set; }
+            public string rewardName { get; set; }
+            public int pointsSpent { get; set; }
+            public string status { get; set; }
+            public DateTime createdAt { get; set; }
+        }
+
+        public class RedeemResult
+        {
+            public bool success { get; set; }
+            public string message { get; set; }
+            public int newPoints { get; set; }
+        }
+
+        //webmethod feature for returning reward catalog
+        [WebMethod(EnableSession = true)]
+        public Reward[] GetRewards()
+        {
+            if (Session["userId"] == null)
+                throw new Exception("Not logged in");
+
+            var rewards = new List<Reward>();
+
+            using (MySqlConnection con = new MySqlConnection(getConString()))
+            using (MySqlCommand cmd = new MySqlCommand(@"
+        SELECT reward_id, name, description, points_cost, quantity_available, is_active, image_url
+        FROM rewards
+        WHERE is_active = 1
+        ORDER BY points_cost ASC;
+    ", con))
+            {
+                con.Open();
+                using (var r = cmd.ExecuteReader())
+                {
+                    while (r.Read())
+                    {
+                        rewards.Add(new Reward
+                        {
+                            rewardId = r.GetInt32("reward_id"),
+                            name = r.GetString("name"),
+                            description = r.IsDBNull(r.GetOrdinal("description")) ? "" : r.GetString("description"),
+                            pointsCost = r.GetInt32("points_cost"),
+                            quantityAvailable = r.GetInt32("quantity_available"),
+                            isActive = r.GetInt32("is_active") == 1,
+                            imageUrl = r.IsDBNull(r.GetOrdinal("image_url"))
+                                ? ""
+                                : r.GetString("image_url")
+                        });
+                    }
+                }
+            }
+            return rewards.ToArray();
+        }
+
+        //webmethod feature for returning redemption history for logged in user
+        [WebMethod(EnableSession = true)]
+        public Redemption[] GetMyRedemptions()
+        {
+            if (Session["userId"] == null)
+                throw new Exception("Not logged in");
+
+            int userId = (int)Session["userId"];
+            var redemptions = new List<Redemption>();
+
+            using (MySqlConnection con = new MySqlConnection(getConString()))
+            using (MySqlCommand cmd = new MySqlCommand(@"
+        SELECT rr.redemption_id, rr.reward_id, rw.name AS reward_name,
+               rr.points_spent, rr.status, rr.created_at
+        FROM reward_redemptions rr
+        JOIN rewards rw ON rw.reward_id = rr.reward_id
+        WHERE rr.employee_id = @id
+        ORDER BY rr.created_at DESC;
+    ", con))
+            {
+                cmd.Parameters.AddWithValue("@id", userId);
+                con.Open();
+
+                using (var r = cmd.ExecuteReader())
+                {
+                    while (r.Read())
+                    {
+                        redemptions.Add(new Redemption
+                        {
+                            redemptionId = r.GetInt32("redemption_id"),
+                            rewardId = r.GetInt32("reward_id"),
+                            rewardName = r.GetString("reward_name"),
+                            pointsSpent = r.GetInt32("points_spent"),
+                            status = r.GetString("status"),
+                            createdAt = r.GetDateTime("created_at")
+                        });
+                    }
+                }
+            }
+
+            return redemptions.ToArray();
+        }
+
+        //third webmethod for redeeming a reward, transactional deduction + record
+        [WebMethod(EnableSession = true)]
+        public RedeemResult RedeemReward(int rewardId)
+        {
+            if (Session["userId"] == null)
+                return new RedeemResult { success = false, message = "Not logged in" };
+
+            int userId = (int)Session["userId"];
+
+            using (MySqlConnection con = new MySqlConnection(getConString()))
+            {
+                con.Open();
+
+                using (MySqlTransaction tx = con.BeginTransaction())
+                {
+                    try
+                    {
+                        // 1) Lock reward row + read reward info
+                        int cost, qty, active;
+
+                        using (MySqlCommand getReward = new MySqlCommand(@"
+                    SELECT points_cost, quantity_available, is_active
+                    FROM rewards
+                    WHERE reward_id = @rid
+                    FOR UPDATE;
+                ", con, tx))
+                        {
+                            getReward.Parameters.AddWithValue("@rid", rewardId);
+
+                            using (var r = getReward.ExecuteReader())
+                            {
+                                if (!r.Read())
+                                {
+                                    tx.Rollback();
+                                    return new RedeemResult { success = false, message = "Reward not found." };
+                                }
+
+                                cost = r.GetInt32("points_cost");
+                                qty = r.GetInt32("quantity_available");
+                                active = r.GetInt32("is_active");
+                            }
+                        }
+
+                        if (active != 1)
+                        {
+                            tx.Rollback();
+                            return new RedeemResult { success = false, message = "Reward not available." };
+                        }
+
+                        if (qty <= 0)
+                        {
+                            tx.Rollback();
+                            return new RedeemResult { success = false, message = "Reward out of stock." };
+                        }
+
+                        // 2) Lock employee row + read points
+                        int points;
+                        using (MySqlCommand getPts = new MySqlCommand(@"
+                    SELECT points
+                    FROM employees
+                    WHERE employee_id = @id
+                    FOR UPDATE;
+                ", con, tx))
+                        {
+                            getPts.Parameters.AddWithValue("@id", userId);
+                            object result = getPts.ExecuteScalar();
+
+                            if (result == null || result == DBNull.Value)
+                            {
+                                tx.Rollback();
+                                return new RedeemResult { success = false, message = "Employee not found." };
+                            }
+
+                            points = Convert.ToInt32(result);
+                        }
+
+                        if (points < cost)
+                        {
+                            tx.Rollback();
+                            return new RedeemResult { success = false, message = "Insufficient points." };
+                        }
+
+                        // 3) Deduct points
+                        using (MySqlCommand updPts = new MySqlCommand(@"
+                    UPDATE employees
+                    SET points = points - @cost
+                    WHERE employee_id = @id;
+                ", con, tx))
+                        {
+                            updPts.Parameters.AddWithValue("@cost", cost);
+                            updPts.Parameters.AddWithValue("@id", userId);
+                            updPts.ExecuteNonQuery();
+                        }
+
+                        // 4) Insert redemption record
+                        using (MySqlCommand ins = new MySqlCommand(@"
+                    INSERT INTO reward_redemptions (employee_id, reward_id, points_spent, status, created_at)
+                    VALUES (@id, @rid, @cost, 'Pending', NOW());
+                ", con, tx))
+                        {
+                            ins.Parameters.AddWithValue("@id", userId);
+                            ins.Parameters.AddWithValue("@rid", rewardId);
+                            ins.Parameters.AddWithValue("@cost", cost);
+                            ins.ExecuteNonQuery();
+                        }
+
+                        // 5) Decrement inventory (guarded)
+                        using (MySqlCommand updInv = new MySqlCommand(@"
+                    UPDATE rewards
+                    SET quantity_available = quantity_available - 1
+                    WHERE reward_id = @rid AND quantity_available > 0;
+                ", con, tx))
+                        {
+                            updInv.Parameters.AddWithValue("@rid", rewardId);
+                            int rows = updInv.ExecuteNonQuery();
+
+                            if (rows == 0)
+                            {
+                                tx.Rollback();
+                                return new RedeemResult { success = false, message = "Reward out of stock." };
+                            }
+                        }
+
+                        // 6) Fetch updated points
+                        int newPoints;
+                        using (MySqlCommand getNew = new MySqlCommand(@"
+                    SELECT points
+                    FROM employees
+                    WHERE employee_id = @id;
+                ", con, tx))
+                        {
+                            getNew.Parameters.AddWithValue("@id", userId);
+                            newPoints = Convert.ToInt32(getNew.ExecuteScalar());
+                        }
+
+                        tx.Commit();
+                        return new RedeemResult
+                        {
+                            success = true,
+                            message = "Redeemed successfully!",
+                            newPoints = newPoints
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        try { tx.Rollback(); } catch { }
+
+                        return new RedeemResult
+                        {
+                            success = false,
+                            message = "Server error: " + ex.Message
+                        };
+                    }
+                }
+            }
+        }
+
+        // Login Feature class
         public class LoginResult
         {
             public bool success { get; set; }
@@ -59,7 +329,7 @@ namespace ProjectTemplate
             public bool isLocked { get; set; }
             public int remainingAttempts { get; set; }
         }
-        //creaing class for register result (registering new employees)
+        //creating class for register result (registering new employees)
         public class RegisterResult
         {
             public bool success { get; set; }

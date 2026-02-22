@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Rewards</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <h2>Rewards Page</h2>
+
+    <div>
+        <strong>Your Points:</strong>
+        <span id="pointsValue">0</span>
+    </div>
+
+    <hr />
+
+    <h3>Available Rewards</h3>
+    <div id="rewardsList"></div>
+
+    <hr />
+
+ 
+
+    <h3>My Redemption History</h3>
+    <div id="redemptionsList"></div>
+
+    <script>
+        $(document).ready(function () {
+
+            // Check session
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/Me",
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (res) {
+                    if (!res.d.loggedIn) {
+                        window.location.href = "index.html";
+                        return;
+                    }
+
+                    loadPoints();
+                    loadRewards();
+                    loadRedemptions();
+                }
+            });
+
+        });
+
+
+        function loadPoints() {
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/GetPoints",
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (res) {
+                    $("#pointsValue").text(res.d);
+                }
+            });
+        }
+
+        function loadRewards() {
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/GetRewards",
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (res) {
+
+                    let html = "";
+
+                    (res.d || []).forEach(function (r) {
+
+                        const imgUrl = (r.imageUrl && r.imageUrl.trim().length > 0)
+                            ? r.imageUrl
+                            : "https://via.placeholder.com/90?text=Reward";
+
+                        const outOfStock = r.quantityAvailable <= 0;
+
+                        html += `
+                    <div style="display:flex; gap:14px; align-items:center; border:1px solid #ccc; padding:10px; margin:10px 0; border-radius:10px;">
+                        
+                        <img src="${escapeHtml(imgUrl)}"
+                             alt="${escapeHtml(r.name)}"
+                             style="width:90px; height:90px; object-fit:cover; border-radius:10px;"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/90?text=No+Image';" />
+
+                        <div style="flex:1;">
+                            <div style="font-weight:700;">${escapeHtml(r.name)}</div>
+                            <div style="margin:6px 0;">${escapeHtml(r.description || "")}</div>
+                            <div>Cost: <strong>${r.pointsCost}</strong> points</div>
+                            <div>Available: ${r.quantityAvailable}</div>
+
+                            <button onclick="redeem(${r.rewardId})" ${outOfStock ? "disabled" : ""}>
+                                ${outOfStock ? "Out of stock" : "Redeem"}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                    });
+
+                    $("#rewardsList").html(html);
+                },
+                error: function (xhr) {
+                    console.log(xhr.responseText);
+                    alert("Failed to load rewards.");
+                }
+            });
+        }
+
+        function loadRedemptions() {
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/GetMyRedemptions",
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (res) {
+
+                    let html = "<ul>";
+
+                    res.d.forEach(function (r) {
+                        html += `<li>${r.rewardName} - ${r.pointsSpent} pts - ${r.status}</li>`;
+                    });
+
+                    html += "</ul>";
+
+                    $("#redemptionsList").html(html);
+                }
+            });
+        }
+
+        function redeem(rewardId) {
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/RedeemReward",
+                data: JSON.stringify({ rewardId: rewardId }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (res) {
+
+                    if (!res.d.success) {
+                        alert(res.d.message);
+                    } else {
+                        alert(res.d.message);
+                        $("#pointsValue").text(res.d.newPoints);
+                    }
+
+                    loadRewards();
+                    loadRedemptions();
+                }
+            });
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+
+    </script>
+
+</body>
+</html>

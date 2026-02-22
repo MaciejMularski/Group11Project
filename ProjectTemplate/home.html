@@ -11,6 +11,8 @@
     <h2 id="pointsDisplay"></h2>
     <div id="userInfo"></div>
 
+
+
     <button onclick="logout()">Logout</button>
 
     <!-- button for registering new employees for the admins-->
@@ -35,6 +37,10 @@
             <div id="pulseMsg" style="min-height:20px; color:#333;"></div>
         </div>
     </div>
+
+    <!-- button to go to rewards page-->
+    <a href="rewards.html">🎁 Go to Rewards</a>
+
 
     <script>
         // Runs once when home.html loads
@@ -160,9 +166,11 @@
                     $("#pulseMsg").text("Error submitting. Please try again.");
                 }
             });
-            
+
         });
     </script>
+
+
 
 </body>
 </html>
