@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay Questions - Wellness Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2em;
+        }
+
+        .points-display {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .question-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .question-card.submitted {
+            opacity: 0.7;
+            background: #f5f5f5;
+        }
+
+        .question-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .question-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 10px;
+        }
+
+        .badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .badge-points {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .badge-status {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-completed {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #9E9E9E;
+            color: white;
+        }
+
+        .empty-state {
+            background: white;
+            padding: 60px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h2 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        
+        <div class="header">
+            <h1>📝 Essay Questions</h1>
+            <div id="pointsDisplay" class="points-display">Loading...</div>
+        </div>
+
+        <div id="errorContainer"></div>
+        <div id="loadingContainer" class="loading">Loading questions...</div>
+        <div id="questionsContainer"></div>
+    </div>
+
+    <script>
+        // Configuration - UPDATE THIS WITH YOUR ACTUAL USER ID
+        // TODO: Get this from session/login
+        const CURRENT_USER_ID = 1; // Replace with actual logged-in user ID
+
+        // Show error message
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="error"><strong>Error:</strong> ${message}</div>`;
+        }
+
+        // Load user points
+        function loadUserPoints() {
+            fetch('ProjectServices.asmx/GetUserPoints', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId: CURRENT_USER_ID })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const points = data.d;
+                document.getElementById('pointsDisplay').textContent = `💎 ${points} points`;
+            })
+            .catch(error => {
+                console.error('Error loading points:', error);
+                document.getElementById('pointsDisplay').textContent = '💎 0 points';
+            });
+        }
+
+        // Load essay questions
+        function loadEssayQuestions() {
+            const loadingContainer = document.getElementById('loadingContainer');
+            const questionsContainer = document.getElementById('questionsContainer');
+
+            fetch('ProjectServices.asmx/GetEssayQuestions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId: CURRENT_USER_ID })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingContainer.style.display = 'none';
+                const questions = data.d;
+
+                if (questions.length === 0) {
+                    questionsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <h2>No Questions Available</h2>
+                            <p>Check back later for new essay questions!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Render questions
+                questionsContainer.innerHTML = questions.map(question => {
+                    const isSubmitted = question.HasSubmitted;
+                    const cardClass = isSubmitted ? 'question-card submitted' : 'question-card';
+                    const statusBadge = isSubmitted 
+                        ? '<span class="badge badge-completed">✓ Completed</span>'
+                        : '<span class="badge badge-status">Available</span>';
+                    const buttonText = isSubmitted ? 'Submitted' : 'Answer Question';
+                    const buttonDisabled = isSubmitted ? 'disabled' : '';
+
+                    return `
+                        <div class="${cardClass}">
+                            <div class="question-title">${question.Title}</div>
+                            <div class="question-text">${question.QuestionText}</div>
+                            <div class="question-footer">
+                                <div class="badges">
+                                    <span class="badge badge-points">💎 ${question.Points} points</span>
+                                    ${statusBadge}
+                                </div>
+                                <button 
+                                    class="btn btn-primary" 
+                                    onclick="viewQuestion(${question.Id})"
+                                    ${buttonDisabled}>
+                                    ${buttonText}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            })
+            .catch(error => {
+                console.error('Error loading questions:', error);
+                loadingContainer.style.display = 'none';
+                showError('Failed to load essay questions. Please try again later.');
+            });
+        }
+
+        // View individual question
+        function viewQuestion(questionId) {
+            window.location.href = `essay-question-detail.html?id=${questionId}`;
+        }
+
+        // Initialize page
+        loadUserPoints();
+        loadEssayQuestions();
+    </script>
+</body>
+</html>
