@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
+    <Content Include="admin.html" />
     <Content Include="home.html" />
     <Content Include="register.html" />
     <Content Include="index.html" />

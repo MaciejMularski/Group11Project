@@ -1,0 +1,496 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin • Feedback Dashboard</title>
+    <style>
+        :root {
+            --bg: #0b1220;
+            --panel: #111b2e;
+            --panel2: #0f1a2b;
+            --text: #e7eefc;
+            --muted: #9ab0d1;
+            --line: rgba(255,255,255,.10);
+            --accent: #6aa6ff;
+            --good: #33d17a;
+            --warn: #ffb020;
+            --bad: #ff5d5d;
+            --shadow: 0 14px 30px rgba(0,0,0,.35);
+            --r: 16px;
+            --r2: 12px;
+            --font: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font);
+            color: var(--text);
+            background: radial-gradient(900px 480px at 15% 0%, rgba(106,166,255,.18), transparent 60%), radial-gradient(800px 480px at 90% 10%, rgba(51,209,122,.12), transparent 60%), var(--bg);
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 22px 18px 44px
+        }
+
+        .top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 18px
+        }
+
+        .sub {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(106,166,255,.12);
+            border: 1px solid rgba(106,166,255,.20);
+            color: var(--text);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .btn {
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.04);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+            .btn.primary {
+                background: linear-gradient(135deg, var(--accent), rgba(106,166,255,.55));
+                border-color: rgba(106,166,255,.25);
+                box-shadow: 0 12px 22px rgba(106,166,255,.18);
+            }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(190px, 1fr));
+            gap: 12px;
+            margin: 12px 0 14px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(17,27,46,.92), rgba(15,26,43,.78));
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: var(--r);
+            padding: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .value {
+            font-size: 22px;
+            font-weight: 900;
+            margin-top: 10px
+        }
+
+        .pill {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.04);
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            align-items: start
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px
+        }
+
+            .panel-title h2 {
+                font-size: 14px;
+                margin: 0
+            }
+
+            .panel-title span {
+                font-size: 12px;
+                color: var(--muted)
+            }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: var(--r2);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.10);
+        }
+
+        th, td {
+            padding: 10px 10px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,.06);
+        }
+
+        th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 800;
+            background: rgba(255,255,255,.03);
+        }
+
+        tr:last-child td {
+            border-bottom: 0
+        }
+
+        .tag {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.08);
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--muted)
+        }
+
+            .dot.good {
+                background: var(--good)
+            }
+
+            .dot.warn {
+                background: var(--warn)
+            }
+
+            .dot.bad {
+                background: var(--bad)
+            }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .callout {
+            margin-top: 14px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.03);
+            border-radius: var(--r);
+            padding: 12px 14px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .toast {
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            background: rgba(17,27,46,.96);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 14px;
+            padding: 12px 14px;
+            box-shadow: var(--shadow);
+            display: none;
+            max-width: 360px;
+        }
+
+            .toast b {
+                display: block;
+                font-size: 13px;
+                margin-bottom: 3px;
+                color: var(--text)
+            }
+
+            .toast p {
+                margin: 0;
+                font-size: 12px;
+                color: var(--muted);
+                line-height: 1.35
+            }
+
+        @media (max-width:1100px) {
+            .cards {
+                grid-template-columns: repeat(2, minmax(190px, 1fr))
+            }
+
+            .grid {
+                grid-template-columns: 1fr
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="top">
+            <div>
+                <h1>Employee Feedback Dashboard</h1>
+                <div class="sub">
+                    Admin view for identifying trends and taking action.<br />
+                    <b>Privacy-first:</b> aggregated results only (no names, no individual responses).
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div class="chip">✅ Aggregate-only</div>
+                <button class="btn" onclick="toast('Prototype', 'UI only right now. Values will populate when wired to backend.')">Info</button>
+                <a class="btn primary" href="rewards.html">Go to Rewards</a>
+            </div>
+        </div>
+
+        <!-- MAIN DASHBOARD VALUES: 0 / N/A -->
+        <div class="cards">
+            <div class="card">
+                <div class="row"><div class="label">Responses</div><div class="pill">Last 30 days</div></div>
+                <script>
+    function toast(title, body) {
+        const t = document.getElementById("toast");
+        document.getElementById("toastTitle").textContent = title;
+        document.getElementById("toastBody").textContent = body;
+        t.style.display = "block";
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => t.style.display = "none", 2600);
+    }
+
+    // --- Backend wiring (ASMX) ---
+    // Expected endpoint (you'll implement later):
+    // ProjectServices.asmx/GetFeedbackDashboard
+    //
+    // Expected response shape (ASMX JSON):
+    // { d: { Responses, AvgStars, TopTheme, RecommendedActions, Themes:[], CategoryBreakdown:[] } }
+
+    function setText(id, value, fallback = "N/A") {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (value === null || value === undefined || value === "") el.textContent = fallback;
+        else el.textContent = value;
+    }
+
+    function priorityDotClass(priority) {
+        const p = (priority || "").toLowerCase();
+        if (p.includes("high")) return "bad";
+        if (p.includes("med")) return "warn";
+        if (p.includes("low")) return "good";
+        return "warn"; // neutral default
+    }
+
+    function statusDotClass(status) {
+        const s = (status || "").toLowerCase();
+        if (s.includes("strong") || s.includes("ok")) return "good";
+        if (s.includes("watch") || s.includes("risk")) return "warn";
+        if (s.includes("bad") || s.includes("critical")) return "bad";
+        return "warn";
+    }
+
+    function renderThemes(themes) {
+        const body = document.getElementById("themesBody");
+        if (!body) return;
+        body.innerHTML = "";
+
+        if (!themes || themes.length === 0) {
+            body.innerHTML = `<tr><td>N/A</td><td>N/A</td><td><span class="tag"><span class="dot warn"></span> N/A</span></td></tr>`;
+            return;
+        }
+
+        themes.forEach(t => {
+            const dot = priorityDotClass(t.Priority);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${t.Theme || "N/A"}</td>
+                <td>${t.Summary || "N/A"}</td>
+                <td><span class="tag"><span class="dot ${dot}"></span> ${t.Priority || "N/A"}</span></td>
+            `;
+            body.appendChild(tr);
+        });
+    }
+
+    function renderCategories(cats) {
+        const body = document.getElementById("categoryBody");
+        if (!body) return;
+        body.innerHTML = "";
+
+        if (!cats || cats.length === 0) {
+            body.innerHTML = `<tr><td>N/A</td><td>0%</td><td><span class="tag"><span class="dot warn"></span> N/A</span></td></tr>`;
+            return;
+        }
+
+        cats.forEach(c => {
+            const dot = statusDotClass(c.Status);
+            const rate = (c.RatePercent === null || c.RatePercent === undefined) ? 0 : c.RatePercent;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${c.Category || "N/A"}</td>
+                <td>${rate}%</td>
+                <td><span class="tag"><span class="dot ${dot}"></span> ${c.Status || "N/A"}</span></td>
+            `;
+            body.appendChild(tr);
+        });
+    }
+
+    async function loadDashboard() {
+        try {
+            const res = await fetch("ProjectServices.asmx/GetFeedbackDashboard", {
+                method: "POST",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: "{}"
+            });
+
+            if (!res.ok) throw new Error("HTTP " + res.status);
+
+            const json = await res.json();
+            const d = json && json.d ? json.d : null;
+
+            if (!d) throw new Error("No data returned (missing json.d)");
+
+            // KPIs
+            setText("kpiResponses", d.Responses ?? 0, "0");
+            setText("kpiAvg", (d.AvgStars && d.AvgStars > 0) ? Number(d.AvgStars).toFixed(1) : "N/A");
+            setText("kpiTheme", d.TopTheme || "N/A");
+            setText("kpiActions", d.RecommendedActions ?? 0, "0");
+
+            // Tables
+            renderThemes(d.Themes);
+            renderCategories(d.CategoryBreakdown);
+
+        } catch (err) {
+            // If backend isn't ready yet, keep the placeholder values and don't break the page.
+            // Optional toast so you know it tried.
+            // toast("Dashboard", "Backend not connected yet (showing placeholders).");
+            console.warn("Dashboard load failed:", err);
+        }
+    }
+
+    // Auto-load once page opens
+    loadDashboard();
+</script>
+            </div>
+            <div class="card">
+                <div class="row"><div class="label">Avg satisfaction</div><div class="pill">1–5</div></div>
+                <div class="value">N/A</div>
+            </div>
+            <div class="card">
+                <div class="row"><div class="label">Top theme</div><div class="pill">Aggregate</div></div>
+                <div class="value">N/A</div>
+            </div>
+            <div class="card">
+                <div class="row"><div class="label">Recommended actions</div><div class="pill">Suggested</div></div>
+                <div class="value">0</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- ANONYMIZED THEMES: N/A / 0 -->
+            <div class="card">
+                <div class="panel-title">
+                    <h2>Top anonymized themes</h2>
+                    <span>grouped summary</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>Theme</th><th>What people want (summary)</th><th>Priority</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>N/A</td><td>N/A</td><td><span class="tag"><span class="dot warn"></span> N/A</span></td></tr>
+                        <tr><td>N/A</td><td>N/A</td><td><span class="tag"><span class="dot warn"></span> N/A</span></td></tr>
+                        <tr><td>N/A</td><td>N/A</td><td><span class="tag"><span class="dot good"></span> N/A</span></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="actions">
+                    <button class="btn" onclick="toast('Action plan', 'Prototype button (no backend yet).')">Create action plan</button>
+                    <button class="btn" onclick="toast('Notify leadership', 'Prototype button (no backend yet).')">Notify leadership</button>
+                </div>
+            </div>
+
+            <!-- CATEGORY BREAKDOWN: 0 / N/A -->
+            <div class="card">
+                <div class="panel-title">
+                    <h2>Category breakdown</h2>
+                    <span>aggregate only</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>Category</th><th>Mention rate</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>N/A</td><td>0%</td><td><span class="tag"><span class="dot warn"></span> N/A</span></td></tr>
+                        <tr><td>N/A</td><td>0%</td><td><span class="tag"><span class="dot warn"></span> N/A</span></td></tr>
+                        <tr><td>N/A</td><td>0%</td><td><span class="tag"><span class="dot good"></span> N/A</span></td></tr>
+                        <tr><td>N/A</td><td>0%</td><td><span class="tag"><span class="dot good"></span> N/A</span></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="callout">
+                    <b style="color:var(--text);">Privacy guarantee:</b>
+                    No employee names, no individual responses, no identifiable timestamps. Only aggregated trends and grouped themes.
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast">
+            <b id="toastTitle"></b>
+            <p id="toastBody"></p>
+        </div>
+    </div>
+
+    <script>
+        function toast(title, body) {
+            const t = document.getElementById("toast");
+            document.getElementById("toastTitle").textContent = title;
+            document.getElementById("toastBody").textContent = body;
+            t.style.display = "block";
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => t.style.display = "none", 2600);
+        }
+    </script>
+</body>
+</html>
