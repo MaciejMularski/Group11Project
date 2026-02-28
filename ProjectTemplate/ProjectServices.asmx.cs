@@ -15,13 +15,13 @@ namespace ProjectTemplate
         ////////////////////////////////////////////////////////////////////////
         /// Database credentials - UPDATE THESE FOR YOUR LOCAL SETUP
         ////////////////////////////////////////////////////////////////////////
-        private string dbID = "root";
-        private string dbPass = "Emerald2004!";  // Your MySQL password
-        private string dbName = "group11_database";  // Your database name
-        private string dbServer = "localhost";
+        private string dbServer = "107.180.1.16";
         private string dbPort = "3306";
+        private string dbID = "cis440Spring2026team11";
+        private string dbPass = "cis440Spring2026team11";
+        private string dbName = "cis440Spring2026team11";
         ////////////////////////////////////////////////////////////////////////
-        
+
         ////////////////////////////////////////////////////////////////////////
         /// Connection string method
         ////////////////////////////////////////////////////////////////////////

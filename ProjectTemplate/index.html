@@ -4,6 +4,9 @@
     <meta charset="utf-8" />
     <title>Employee Login</title>
 
+    <!--linking style file-->
+    <link rel="stylesheet" href="Styles.css">
+    
     <!-- jQuery (REQUIRED) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
@@ -66,21 +69,42 @@
 </head>
 
 <body>
+    <div class="page">
+        <div class="card">
 
-    <button onclick="TestButtonHandler()">Click here to test connection!</button>
-    <hr>
+            <div class="topTools">
+                <button class="btn btnGhost" onclick="TestButtonHandler()">Test connection</button>
+            </div>
 
-    <h2>Employee Login</h2>
+            <div class="brand">
+                <div class="logo"></div>
+                <div>
+                    <h1>Employee Portal</h1>
+                    <div class="sub">Sign in to view your points and rewards</div>
+                </div>
+            </div>
 
-    <input id="email" type="text" placeholder="Email" />
-    <br><br>
+            <div class="formRow">
+                <label for="email">Email</label>
+                <input id="email" type="text" placeholder="name@company.com" />
+            </div>
 
-    <input id="password" type="password" placeholder="Password" />
-    <br><br>
+            <div class="formRow">
+                <label for="password">Password</label>
+                <input id="password" type="password" placeholder="••••••••" />
+            </div>
 
-    <button onclick="login()">Login</button>
+            <div class="actions">
+                <button class="btn btnPrimary" onclick="login()">Sign in</button>
+            </div>
 
-    <div id="errorMessage" style="color:red; margin-top:10px;"></div>
+            <div id="errorMessage" class="error"></div>
 
+            <div class="smallNote">
+                If you have trouble logging in, contact your administrator.
+            </div>
+
+        </div>
+    </div>
 </body>
 </html>

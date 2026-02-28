@@ -2,28 +2,56 @@
 <html>
 <head>
     <title>Rewards</title>
+
+    <!-- same shared stylesheet as index/home -->
+    <link rel="stylesheet" href="Styles.css">
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
-    <h2>Rewards Page</h2>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navInner">
+            <div class="navLeft">
+                <div class="navLogo"></div>
+                <div class="navTitle">Employee Portal</div>
+            </div>
 
-    <div>
-        <strong>Your Points:</strong>
-        <span id="pointsValue">0</span>
+            <div class="navLinks">
+                <button class="linkBtn" onclick="window.location.href='home.html'">Home</button>
+                <button class="linkBtn" onclick="window.location.href='rewards.html'">Rewards</button>
+                <button class="linkBtn" onclick="logoutFromRewards()">Logout</button>
+            </div>
+        </div>
     </div>
 
-    <hr />
+    <!-- PAGE CONTENT -->
+    <div class="shell">
 
-    <h3>Available Rewards</h3>
-    <div id="rewardsList"></div>
+        <!-- HEADER CARD -->
+        <div class="card" style="margin-bottom:14px;">
+            <h2 style="margin:0;">Rewards</h2>
+            <div class="sub">Redeem your points for perks and rewards</div>
 
-    <hr />
+            <div style="margin-top:10px;">
+                <span class="badge">⭐ Points: <span id="pointsValue">0</span></span>
+            </div>
+        </div>
 
- 
+        <!-- REWARDS LIST -->
+        <div class="card" style="margin-bottom:14px;">
+            <h3 style="margin:0 0 10px 0;">Available Rewards</h3>
+            <div id="rewardsList"></div>
+        </div>
 
-    <h3>My Redemption History</h3>
-    <div id="redemptionsList"></div>
+        <!-- REDEMPTION HISTORY -->
+        <div class="card">
+            <h3 style="margin:0 0 10px 0;">My Redemption History</h3>
+            <div id="redemptionsList"></div>
+        </div>
+
+    </div>
 
     <script>
         $(document).ready(function () {
@@ -44,11 +72,13 @@
                     loadPoints();
                     loadRewards();
                     loadRedemptions();
+                },
+                error: function () {
+                    window.location.href = "index.html";
                 }
             });
 
         });
-
 
         function loadPoints() {
             $.ajax({
@@ -83,26 +113,34 @@
                         const outOfStock = r.quantityAvailable <= 0;
 
                         html += `
-                    <div style="display:flex; gap:14px; align-items:center; border:1px solid #ccc; padding:10px; margin:10px 0; border-radius:10px;">
-                        
-                        <img src="${escapeHtml(imgUrl)}"
-                             alt="${escapeHtml(r.name)}"
-                             style="width:90px; height:90px; object-fit:cover; border-radius:10px;"
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/90?text=No+Image';" />
+                                <div class="reward-card">
 
-                        <div style="flex:1;">
-                            <div style="font-weight:700;">${escapeHtml(r.name)}</div>
-                            <div style="margin:6px 0;">${escapeHtml(r.description || "")}</div>
-                            <div>Cost: <strong>${r.pointsCost}</strong> points</div>
-                            <div>Available: ${r.quantityAvailable}</div>
+                                    <img src="${escapeHtml(imgUrl)}"
+                                         alt="${escapeHtml(r.name)}"
+                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/90?text=No+Image';" />
 
-                            <button onclick="redeem(${r.rewardId})" ${outOfStock ? "disabled" : ""}>
-                                ${outOfStock ? "Out of stock" : "Redeem"}
-                            </button>
-                        </div>
-                    </div>
-                `;
+                                    <div class="reward-info">
+                                        <h4>${escapeHtml(r.name)}</h4>
+                                        <div class="sub">${escapeHtml(r.description || "")}</div>
+
+                                        <div style="margin-top:8px;">
+                                            <span class="badge">${r.pointsCost} points</span>
+                                            <span class="sub" style="margin-left:10px;">Available: ${r.quantityAvailable}</span>
+                                        </div>
+
+                                        <div style="margin-top:10px;">
+                                            <button class="btn btnPrimary" onclick="redeem(${r.rewardId})" ${outOfStock ? "disabled" : ""}>
+                                                ${outOfStock ? "Out of stock" : "Redeem"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
                     });
+
+                    if (!html) {
+                        html = `<div class="sub">No rewards available right now.</div>`;
+                    }
 
                     $("#rewardsList").html(html);
                 },
@@ -122,15 +160,31 @@
                 dataType: "json",
                 success: function (res) {
 
-                    let html = "<ul>";
+                    const items = (res.d || []);
+                    if (items.length === 0) {
+                        $("#redemptionsList").html(`<div class="sub">No redemptions yet.</div>`);
+                        return;
+                    }
 
-                    res.d.forEach(function (r) {
-                        html += `<li>${r.rewardName} - ${r.pointsSpent} pts - ${r.status}</li>`;
+                    let html = `<div style="display:flex; flex-direction:column; gap:10px;">`;
+
+                    items.forEach(function (r) {
+                        html += `
+                                <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:white;">
+                                    <div style="font-weight:700;">${escapeHtml(r.rewardName)}</div>
+                                    <div class="sub" style="margin-top:6px;">
+                                        ${r.pointsSpent} pts • ${escapeHtml(r.status)} • ${new Date(r.createdAt).toLocaleString()}
+                                    </div>
+                                </div>
+                            `;
                     });
 
-                    html += "</ul>";
+                    html += `</div>`;
 
                     $("#redemptionsList").html(html);
+                },
+                error: function () {
+                    $("#redemptionsList").html(`<div class="sub">Could not load redemption history.</div>`);
                 }
             });
         }
@@ -153,6 +207,9 @@
 
                     loadRewards();
                     loadRedemptions();
+                },
+                error: function () {
+                    alert("Redeem failed. Please try again.");
                 }
             });
         }
@@ -166,7 +223,18 @@
                 .replace(/'/g, "&#039;");
         }
 
-
+        // logout function to end session and return to login page
+        function logoutFromRewards() {
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/Logout",
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function () { window.location.href = "index.html"; },
+                error: function () { window.location.href = "index.html"; }
+            });
+        }
     </script>
 
 </body>

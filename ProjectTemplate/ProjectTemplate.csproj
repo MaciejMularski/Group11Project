@@ -98,6 +98,7 @@
     <Content Include="Logout.aspx" />
     <Content Include="ProjectServices.asmx" />
     <Content Include="rewards.html" />
+    <Content Include="Styles.css" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -126,6 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Content\" />
     <Folder Include="Controllers\" />
     <Folder Include="Models\" />
   </ItemGroup>

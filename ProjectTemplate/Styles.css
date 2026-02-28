@@ -1,0 +1,255 @@
+﻿:root {
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #2563eb;
+    --primaryHover: #1d4ed8;
+    --danger: #dc2626;
+    --shadow: 0 10px 30px rgba(17,24,39,.08);
+    --radius: 14px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: var(--text);
+    background: radial-gradient(900px 500px at 20% 0%, #e8f0ff 0%, var(--bg) 55%, var(--bg) 100%);
+    min-height: 100vh;
+}
+
+
+.page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 28px 16px;
+}
+
+.card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), #60a5fa);
+}
+
+h1 {
+    font-size: 22px;
+    margin: 0;
+}
+
+.sub {
+    margin: 6px 0 18px 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+
+.formRow {
+    margin-bottom: 12px;
+}
+
+label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+input {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    outline: none;
+    font-size: 14px;
+    background: #fff;
+}
+
+    input:focus {
+        border-color: rgba(37,99,235,.55);
+        box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+
+.actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 14px;
+}
+
+.btn {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btnPrimary {
+    background: var(--primary);
+    color: white;
+    flex: 1;
+}
+
+    .btnPrimary:hover {
+        background: var(--primaryHover);
+    }
+
+.btnGhost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.smallNote {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.error {
+    margin-top: 10px;
+    color: var(--danger);
+    font-size: 13px;
+}
+
+
+.topTools {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+/*App Shell with Navbar */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+}
+
+.navInner {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navLeft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navLogo {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), #60a5fa);
+}
+
+.navTitle {
+    font-weight: 700;
+}
+
+.navLinks {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.linkBtn {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+    .linkBtn:hover {
+        border-color: rgba(37,99,235,.35);
+    }
+
+/* ===== Page container for app pages ===== */
+.shell {
+    max-width: 980px;
+    margin: 22px auto;
+    padding: 0 16px;
+}
+
+.grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 820px) {
+    .grid2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.reward-card {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 12px;
+    background: white;
+    margin-bottom: 12px;
+}
+
+    .reward-card img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+.reward-info {
+    flex: 1;
+}
+
+    .reward-info h4 {
+        margin: 0 0 6px 0;
+    }
+
+.badge {
+    background: #eef2ff;
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}

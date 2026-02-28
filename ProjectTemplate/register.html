@@ -3,31 +3,63 @@
 <head>
     <meta charset="utf-8" />
     <title>Register New Employee</title>
+
+    <!-- Shared portal styles -->
+    <link rel="stylesheet" href="Styles.css">
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
+
 <body>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navInner">
+            <div class="navLeft">
+                <div class="navLogo"></div>
+                <div class="navTitle">Employee Portal</div>
+            </div>
 
-    <h1>Register New Employee (Admin)</h1>
+            <div class="navLinks">
+                <button class="linkBtn" onclick="window.location.href='home.html'">Home</button>
+                <button class="linkBtn" onclick="window.location.href='rewards.html'">Rewards</button>
+                <button class="linkBtn" onclick="logoutFromRegister()">Logout</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="status" style="margin:10px 0; font-weight:bold;"></div>
+    <!-- PAGE CONTENT -->
+    <div class="shell">
+        <div class="card" style="max-width:560px; margin:0 auto;">
+            <h2 style="margin:0;">Register New Employee</h2>
+            <div class="sub">Admin-only: create a new employee account</div>
 
-    <label>Email</label><br>
-    <input id="email" type="text" placeholder="employee@email.com" />
-    <br><br>
+            <!-- Status message -->
+            <div id="status" class="sub" style="margin-top:12px; font-weight:700;"></div>
 
-    <label>Password</label><br>
-    <input id="password" type="password" placeholder="Minimum 8 characters" />
-    <br><br>
+            <div class="formRow" style="margin-top:14px;">
+                <label for="email">Email</label>
+                <input id="email" type="text" placeholder="employee@email.com" />
+            </div>
 
-    <label>Role</label><br>
-    <select id="role">
-        <option value="employee">employee</option>
-        <option value="admin">admin</option>
-    </select>
-    <br><br>
+            <div class="formRow">
+                <label for="password">Password</label>
+                <input id="password" type="password" placeholder="Minimum 8 characters" />
+            </div>
 
-    <button onclick="registerEmployee()">Register Employee</button>
-    <button onclick="goHome()">Back to Home</button>
+            <div class="formRow">
+                <label for="role">Role</label>
+                <select id="role">
+                    <option value="employee">employee</option>
+                    <option value="admin">admin</option>
+                </select>
+            </div>
+
+            <div class="actions" style="display:flex; gap:10px; margin-top:14px;">
+                <button class="btn btnPrimary" onclick="registerEmployee()">Register Employee</button>
+                <button class="btn btnGhost" onclick="goHome()">Back to Home</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // 1) Gate page access: logged in + admin only
@@ -89,6 +121,19 @@
 
         function goHome() {
             window.location.href = "home.html";
+        }
+
+        // Logout button for navbar 
+        function logoutFromRegister() {
+            $.ajax({
+                type: "POST",
+                url: "ProjectServices.asmx/Logout",
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function () { window.location.href = "index.html"; },
+                error: function () { window.location.href = "index.html"; }
+            });
         }
     </script>
 

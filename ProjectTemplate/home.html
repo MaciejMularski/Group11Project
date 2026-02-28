@@ -2,25 +2,59 @@
 <html>
 <head>
     <title>Employee Home</title>
+    <link rel="stylesheet" href="Styles.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navInner">
+            <div class="navLeft">
+                <div class="navLogo"></div>
+                <div class="navTitle">Employee Portal</div>
+            </div>
 
-    <h1>Welcome Employee!</h1>
+            <div class="navLinks">
+                <button class="linkBtn" onclick="window.location.href='home.html'">Home</button>
+                <button class="linkBtn" onclick="window.location.href='rewards.html'">Rewards</button>
+                <button class="linkBtn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
 
-    <h2 id="pointsDisplay"></h2>
-    <div id="userInfo"></div>
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="shell">
 
+        <div class="grid2">
+            <!-- LEFT CARD -->
+            <div class="card">
+                <h2 style="margin:0;">Welcome!</h2>
+                <div class="sub">Your dashboard overview</div>
 
+                <h3 id="pointsDisplay" style="margin:14px 0 0 0;"></h3>
+                <div id="userInfo" class="sub" style="margin-top:8px;"></div>
 
-    <button onclick="logout()">Logout</button>
+                <div style="margin-top:14px;">
+                    <button class="btn btnPrimary" onclick="window.location.href='rewards.html'">
+                        🎁 Go to Rewards
+                    </button>
+                </div>
+            </div>
 
-    <!-- button for registering new employees for the admins-->
-    <button id="adminRegisterBtn" style="display:none;" onclick="goToRegister()">
-        Register New Employee
-    </button>
+            <!-- RIGHT CARD -->
+            <div class="card">
+                <h3 style="margin:0;">Admin</h3>
+                <div class="sub" style="margin-bottom:12px;">Admin actions (only visible to admins)</div>
 
-    <!-- DAILY PULSE POPUP (HTML MUST BE OUTSIDE <script>) -->
+                <button id="adminRegisterBtn" class="btn btnGhost" style="display:none;" onclick="goToRegister()">
+                    ➕ Register New Employee
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DAILY PULSE POPUP -->
     <div id="pulseOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.45); z-index:9999;">
         <div style="background:white; width:340px; margin:12% auto; padding:18px; border-radius:12px; text-align:center; font-family:Arial;">
             <h3 style="margin-top:0;">How are you feeling today?</h3>
@@ -37,10 +71,6 @@
             <div id="pulseMsg" style="min-height:20px; color:#333;"></div>
         </div>
     </div>
-
-    <!-- button to go to rewards page-->
-    <a href="rewards.html">🎁 Go to Rewards</a>
-
 
     <script>
         // Runs once when home.html loads
@@ -59,9 +89,9 @@
                     } else {
                         $("#userInfo").text("User ID: " + result.userId + " | Role: " + result.role);
                         loadPoints();
-                        checkDailyPulse(); // ✅ show popup if user hasn't answered today
+                        checkDailyPulse();
                     }
-                    // Show admin button if user is an admin
+
                     if ((result.role || "").toLowerCase() === "admin") {
                         $("#adminRegisterBtn").show();
                     }
@@ -98,17 +128,11 @@
                 data: "{}",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
-                success: function () {
-                    window.location.href = "index.html";
-                },
-                error: function (e) {
-                    console.log(e);
-                    window.location.href = "index.html";
-                }
+                success: function () { window.location.href = "index.html"; },
+                error: function (e) { console.log(e); window.location.href = "index.html"; }
             });
         }
 
-        // ===== DAILY PULSE JS =====
         function showPulse() {
             $("#pulseMsg").text("");
             $("#pulseOverlay").show();
@@ -127,21 +151,16 @@
                 dataType: "json",
                 success: function (msg) {
                     let resp = msg.d;
-                    if (resp.loggedIn && resp.shouldShow) {
-                        showPulse();
-                    }
+                    if (resp.loggedIn && resp.shouldShow) showPulse();
                 },
-                error: function (e) {
-                    console.log(e);
-                }
+                error: function (e) { console.log(e); }
             });
         }
-        //using function to use the button for admins to register html page
+
         function goToRegister() {
             window.location.href = "register.html";
         }
 
-        // When an emoji is clicked, submit pulse + award points
         $(document).on("click", ".pulseEmoji", function () {
             var mood = $(this).data("mood");
             $("#pulseMsg").text("Submitting...");
@@ -157,7 +176,7 @@
                     $("#pulseMsg").text(resp.message);
 
                     if (resp.success) {
-                        loadPoints(); // refresh points display
+                        loadPoints();
                         setTimeout(hidePulse, 900);
                     }
                 },
@@ -166,11 +185,7 @@
                     $("#pulseMsg").text("Error submitting. Please try again.");
                 }
             });
-
         });
     </script>
-
-
-
 </body>
 </html>
